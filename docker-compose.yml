@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: bs
+      POSTGRES_PASSWORD: bs
+      POSTGRES_DB: bspricing
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bs -d bspricing"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+psycopg2://bs:bs@db:5432/bspricing
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
